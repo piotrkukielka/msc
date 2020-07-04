@@ -6,12 +6,13 @@
 #define NAREW_SOLVERS_H
 
 #include <vector>
+#include "equations.h"
 
 class SolverRungeKutta6{
     double dt;
-    double(*fun)(double, double);
+    ReactionTerm reactionTerm;
 public:
-    SolverRungeKutta6(double dt, double (*fun)(double, double));
+    SolverRungeKutta6(double dt, ReactionTerm reactionTerm);
 
     double step_rk6(double previous_value, int iteration_number);
 
@@ -28,6 +29,8 @@ class SolverCrankNicolson{
                                    std::vector<double> d,
                                    int n);
 public:
+    SolverCrankNicolson(double dt, double dx, double advCoeff, double diffCoeff);
+
     std::vector<double> step_cn(int nx,
                                 std::vector<double> y_prev,
                                 double left_boundary_cond);
