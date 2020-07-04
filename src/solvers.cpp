@@ -4,7 +4,9 @@
 
 #include "../headers/solvers.h"
 
-SolverRungeKutta6::SolverRungeKutta6(double dt, ReactionTerm reactionTerm) : dt(dt), reactionTerm(reactionTerm) {}
+#include <utility>
+
+SolverRungeKutta6::SolverRungeKutta6(double dt, ReactionTerm reactionTerm) : dt(dt), reactionTerm(std::move(reactionTerm)) {}
 
 double SolverRungeKutta6::step_rk6(double previous_value, int iteration_number) {
     double t, next_value, k0, k1, k2, k3, k4, k5, k6, k7;
