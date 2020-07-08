@@ -23,7 +23,7 @@ public:
 class GridSearch {
 
 public:
-    void search();
+    void search(Bounds advCoeffs, Bounds diffCoeffs, std::vector<double> rs);
 
 };
 
@@ -31,7 +31,7 @@ class Simulation{
     void save(std::vector<std::vector<double>> data);
     std::vector<std::vector<double>> run(double adv_coeff_bounds, double diff_coeff_bounds, std::vector<double> rs);
 public:
-    void run_and_save(double adv_coeff_bounds, double diff_coeff_bounds, std::vector<double> rs);
+    void run_and_save(double adv_coeff, double diff_coeff, std::vector<double> rs);
 
 };
 

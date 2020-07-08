@@ -10,14 +10,11 @@
 #include "solvers.h"
 
 
-void GridSearch::search() {
+void GridSearch::search(Bounds advCoeffs, Bounds diffCoeffs, std::vector<double> rs) {
     Simulation simulation;
-    std::vector<double> rs{1,1,1,1,1,1};
-    Bounds advCoeffs{0.1, 2, 0.1};
-    Bounds diffCoeffs{0.1, 2, 0.1};
     for (int i = 0; i < advCoeffs.num_of_iters; ++i) {
         for (int j = 0; j < diffCoeffs.num_of_iters; ++j) {
-            simulation.run_and_save(advCoeffs.values[i], diffCoeffs.values[j], rs)
+            simulation.run_and_save(advCoeffs.values[i], diffCoeffs.values[j], rs);
         }
     }
 }
@@ -35,12 +32,13 @@ std::vector<double> Bounds::find_values() {
     for (int i = 0; i < this->num_of_iters; ++i) {
         this->values[i] = this->lower + i * this->interval;
     }
+    std::cout << this->values.size() << std::endl;
     return this->values;
 }
 
-void Simulation::run_and_save(double adv_coeff_bounds, double diff_coeff_bounds, std::vector<double> rs) {
-    std::vector<std::vector<double>> result = this->run()
-    this->save(result)
+void Simulation::run_and_save(double adv_coeff, double diff_coeff, std::vector<double> rs) {
+    std::vector<std::vector<double>> result = this->run(adv_coeff, diff_coeff, rs);
+    this->save(result);
 }
 
 void Simulation::save(std::vector<std::vector<double>> data) {
