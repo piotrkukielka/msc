@@ -2,47 +2,47 @@
 // Created by Piotr on 02-Jul-20.
 //
 
+#include <utility>
 #include <vector>
 #include <fstream>
 #include <iostream>
+#include <string>
 #include "searchers.h"
 #include "equations.h"
 #include "solvers.h"
 
 
 void GridSearch::search(Bounds advCoeffs, Bounds diffCoeffs, std::vector<double> rs) {
-    Simulation simulation;
-    for (int i = 0; i < advCoeffs.num_of_iters; ++i) {
-        for (int j = 0; j < diffCoeffs.num_of_iters; ++j) {
-            simulation.run_and_save(advCoeffs.values[i], diffCoeffs.values[j], rs);
+    for (int i = 0; i < advCoeffs.get_num_of_iters(); ++i) {
+        for (int j = 0; j < diffCoeffs.get_num_of_iters(); ++j) {
+            std::cout<<advCoeffs.get_value(i)<<std::endl;
+            Simulation simulation(advCoeffs.get_value(i), diffCoeffs.get_value(j), rs);
+            simulation.run_and_save();
         }
     }
 }
 
 Bounds::Bounds(double lower, double upper, double interval) : lower(lower), upper(upper),
-                                                              interval(interval),
-                                                              num_of_iters(this->find_num_of_iters()) {}
+                                                              interval(interval) {}
 
-int Bounds::find_num_of_iters() {
-    this->num_of_iters = int((this->upper - this->lower) / this->interval);
-    return this->num_of_iters;
+int Bounds::get_num_of_iters() {
+    int num_of_iters = int((this->upper - this->lower) / this->interval);
+    return num_of_iters;
 }
 
-std::vector<double> Bounds::find_values() {
-    for (int i = 0; i < this->num_of_iters; ++i) {
-        this->values[i] = this->lower + i * this->interval;
-    }
-    std::cout << this->values.size() << std::endl;
-    return this->values;
+double Bounds::get_value(int i) {
+    return this->lower + i * this->interval;
 }
 
-void Simulation::run_and_save(double adv_coeff, double diff_coeff, std::vector<double> rs) {
-    std::vector<std::vector<double>> result = this->run(adv_coeff, diff_coeff, rs);
+void Simulation::run_and_save() {
+    std::vector<std::vector<double>> result = this->run();
     this->save(result);
 }
 
 void Simulation::save(std::vector<std::vector<double>> data) {
-    std::ofstream outFile("../results.txt");
+    std::string path = "../results/";
+    std::string filename = std::to_string(this->diff_coeff) + "_" + std::to_string(this->adv_coeff);
+    std::ofstream outFile(path + filename);
     for (int i = 0; i < data.size(); ++i) {
         for (int j = 0; j < data[0].size(); ++j) {
             outFile << data[i][j] << " ";
@@ -52,7 +52,7 @@ void Simulation::save(std::vector<std::vector<double>> data) {
 }
 
 std::vector<std::vector<double>>
-Simulation::run(double adv_coeff_bounds, double diff_coeff_bounds, std::vector<double> rs) {
+Simulation::run() {
     const double dt = 1.;
     const double dx = 0.1;
     const double xend = 40.;  // km?
@@ -64,9 +64,7 @@ Simulation::run(double adv_coeff_bounds, double diff_coeff_bounds, std::vector<d
     ReactionTerm reactionTerm{};
     SolverRungeKutta6 solverRk6{dt, reactionTerm};
 
-    double adv_coeff = -0.1/24.;  // km/h
-    double diff_coeff = 0.1/24.;  // km^2/h
-    SolverCrankNicolson solverCrankNicolson{dt, dx, adv_coeff, diff_coeff};
+    SolverCrankNicolson solverCrankNicolson{dt, dx, this->adv_coeff, this->diff_coeff};
 
     double left_bound = 0.; // kg per m3
 
@@ -86,3 +84,7 @@ Simulation::run(double adv_coeff_bounds, double diff_coeff_bounds, std::vector<d
     }
     return result;
 }
+
+Simulation::Simulation(double advCoeff, double diffCoeff, std::vector<double> rs) : adv_coeff(advCoeff),
+                                                                                           diff_coeff(diffCoeff),
+                                                                                           rs(std::move(rs)) {}

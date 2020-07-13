@@ -10,5 +10,5 @@ int main(){
     std::vector<double> rs{1,1,1,1,1,1};
 
     GridSearch gridSearch;
-    gridSearch.search(advCoeffs, diffCoeffs, rs)
+    gridSearch.search(advCoeffs, diffCoeffs, rs);
 }

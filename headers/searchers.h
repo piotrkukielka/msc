@@ -10,12 +10,9 @@ class Bounds{
     double upper;
     double interval;
 
-    int find_num_of_iters();
-    std::vector<double> find_values();
-
 public:
-    int num_of_iters;
-    std::vector<double> values;
+    int get_num_of_iters();
+    double get_value(int i);
     Bounds(double lower, double upper, double interval);
 
 };
@@ -28,10 +25,16 @@ public:
 };
 
 class Simulation{
+    double adv_coeff;
+    double diff_coeff;
+    std::vector<double> rs;
+
     void save(std::vector<std::vector<double>> data);
-    std::vector<std::vector<double>> run(double adv_coeff_bounds, double diff_coeff_bounds, std::vector<double> rs);
+    std::vector<std::vector<double>> run();
 public:
-    void run_and_save(double adv_coeff, double diff_coeff, std::vector<double> rs);
+    Simulation(double advCoeff, double diffCoeff, std::vector<double> rs);
+
+    void run_and_save();
 
 };
 

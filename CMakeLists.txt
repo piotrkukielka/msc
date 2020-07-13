@@ -5,5 +5,6 @@ set(CMAKE_CXX_STANDARD 17)
 
 add_executable(msc_0505 main.cpp)
 target_sources(msc_0505 PUBLIC src/solvers.cpp
-        src/equations.cpp)
+        src/equations.cpp
+        src/searchers.cpp)
 target_include_directories(msc_0505 PUBLIC headers)
