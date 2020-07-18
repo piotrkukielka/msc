@@ -43,5 +43,6 @@ double ReactionTerm::temp(double t){
 }
 
 double InitialCondition::evaluate(double x) {
-    return 2.; // g per m3
+//    return 2.; // g per m3
+    return sin(x); // TODO
 }

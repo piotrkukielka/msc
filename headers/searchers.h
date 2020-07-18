@@ -5,37 +5,47 @@
 #ifndef MSC_0505_SEARCHERS_H
 #define MSC_0505_SEARCHERS_H
 
+#include "equations.h"
+
 class Bounds{
     double lower;
     double upper;
-    double interval;
 
 public:
     int get_num_of_iters();
     double get_value(int i);
     Bounds(double lower, double upper, double interval);
 
+    double interval;
 };
 
 class GridSearch {
+    Bounds spatialGrid;
+    Bounds timeGrid;
 
 public:
-    void search(Bounds advCoeffs, Bounds diffCoeffs, std::vector<double> rs);
+    GridSearch(const Bounds &spatialGrid, const Bounds &timeGrid);
+
+    void search(Bounds advCoeffs, Bounds diffCoeffs, const std::vector<double>& rs);
 
 };
 
 class Simulation{
-    double adv_coeff;
-    double diff_coeff;
-    std::vector<double> rs;
+    double dx, dt;
+    int nx, nt;
 
-    void save(std::vector<std::vector<double>> data);
-    std::vector<std::vector<double>> run();
+    void save(std::vector<std::vector<double>> data, const std::string& path);
+    std::vector<std::vector<double>> run(double advCoeff, double diffCoeff, std::vector<double> rs);
 public:
-    Simulation(double advCoeff, double diffCoeff, std::vector<double> rs);
+    Simulation(Bounds spatialGrid, Bounds timeGrid);
+    void run_and_save(double advCoeff, double diffCoeff, std::vector<double> rs);
+    std::string create_path(double adv_coeff, double diff_coeff);
 
-    void run_and_save();
+    void save_small(std::vector<std::vector<double>> data, const std::string& path);
 
+    void save_only_measurepoints(std::vector<std::vector<double>> data, const std::string &path);
+
+    void run_and_save_measurepoints(double advCoeff, double diffCoeff, std::vector<double> rs);
 };
 
 

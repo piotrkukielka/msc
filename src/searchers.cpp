@@ -2,25 +2,29 @@
 // Created by Piotr on 02-Jul-20.
 //
 
-#include <utility>
 #include <vector>
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <valarray>
 #include "searchers.h"
 #include "equations.h"
 #include "solvers.h"
 
 
-void GridSearch::search(Bounds advCoeffs, Bounds diffCoeffs, std::vector<double> rs) {
+void GridSearch::search(Bounds advCoeffs, Bounds diffCoeffs, const std::vector<double> &rs) {
+    Simulation simulation(this->spatialGrid, this->timeGrid);
     for (int i = 0; i < advCoeffs.get_num_of_iters(); ++i) {
         for (int j = 0; j < diffCoeffs.get_num_of_iters(); ++j) {
-            std::cout<<advCoeffs.get_value(i)<<std::endl;
-            Simulation simulation(advCoeffs.get_value(i), diffCoeffs.get_value(j), rs);
-            simulation.run_and_save();
+            std::cout << i+j+1 << " out of " << advCoeffs.get_num_of_iters() * diffCoeffs.get_num_of_iters() + 1 << std::endl;
+//            simulation.run_and_save(advCoeffs.get_value(i), diffCoeffs.get_value(j), rs);
+            simulation.run_and_save_measurepoints(advCoeffs.get_value(i), diffCoeffs.get_value(j), rs);
         }
     }
 }
+
+GridSearch::GridSearch(const Bounds &spatialGrid, const Bounds &timeGrid) : spatialGrid(spatialGrid),
+                                                                            timeGrid(timeGrid) {}
 
 Bounds::Bounds(double lower, double upper, double interval) : lower(lower), upper(upper),
                                                               interval(interval) {}
@@ -34,15 +38,28 @@ double Bounds::get_value(int i) {
     return this->lower + i * this->interval;
 }
 
-void Simulation::run_and_save() {
-    std::vector<std::vector<double>> result = this->run();
-    this->save(result);
+void Simulation::run_and_save(double advCoeff, double diffCoeff, std::vector<double> rs) {
+    std::vector<std::vector<double>> result = this->run(advCoeff, diffCoeff, rs);
+    std::string path = this->create_path(advCoeff, diffCoeff);
+    this->save(result, path);
 }
 
-void Simulation::save(std::vector<std::vector<double>> data) {
+void Simulation::run_and_save_measurepoints(double advCoeff, double diffCoeff, std::vector<double> rs) {
+    std::vector<std::vector<double>> result = this->run(advCoeff, diffCoeff, rs);
+    std::string path = this->create_path(advCoeff, diffCoeff);
+    this->save_only_measurepoints(result, path);
+}
+
+
+std::string Simulation::create_path(double adv_coeff, double diff_coeff) {
+    // TODO: add dx and dt to name
     std::string path = "../results/";
-    std::string filename = std::to_string(this->diff_coeff) + "_" + std::to_string(this->adv_coeff);
-    std::ofstream outFile(path + filename);
+    std::string filename = std::to_string(diff_coeff) + "_" + std::to_string(adv_coeff);
+    return path + filename;
+}
+
+void Simulation::save_small(std::vector<std::vector<double>> data, const std::string &path) {
+    std::ofstream outFile(path);
     for (int i = 0; i < data.size(); ++i) {
         for (int j = 0; j < data[0].size(); ++j) {
             outFile << data[i][j] << " ";
@@ -51,20 +68,86 @@ void Simulation::save(std::vector<std::vector<double>> data) {
     }
 }
 
+void Simulation::save(std::vector<std::vector<double>> data, const std::string &path) {
+    std::ofstream outFile(path);
+    for (int j = 0; j < this->nx; ++j) {
+        for (int i = 0; i < this->nt; ++i) {
+            outFile << i * this->dt << " " << j * this->dx << " " << data[i][j] << std::endl;
+        }
+        outFile << std::endl;
+    }
+}
+
+void Simulation::save_only_measurepoints(std::vector<std::vector<double>> data, const std::string &path) {
+    std::ofstream outFile(path + "measurepoints");
+    std::valarray<double> spatial_measurepoints{
+            0,
+            0,
+            9.2,
+            0,
+            9.2,
+            9.2,
+            0,
+            15.7,
+            37.6,
+            37.6,
+            37.6,
+            43.9,
+            43.9,
+            50.9,
+            56.5,
+            56.5,
+            56.5,
+            65.9,
+            56.5,
+            73.4,
+            56.5,
+            56.5,
+            56.5,
+            90.2,
+            90.2
+    };
+    spatial_measurepoints = spatial_measurepoints / dx;
+    std::valarray<double> time_measurepoints{
+            0,
+            1.91666666662786,
+            3.66666666674428,
+            5.66666666662786,
+            7.33333333331393,
+            8.25,
+            9,
+            13.5,
+            29.5833333333721,
+            30.8333333334303,
+            31.8333333333721,
+            35.9166666667443,
+            37.1666666666279,
+            38.25,
+            41.8333333333139,
+            46.4166666667443,
+            51.9166666666861,
+            53.4166666666861,
+            55.9166666666279,
+            60.5000000000582,
+            62.3333333334304,
+            66.5833333333139,
+            74.4999999999418,
+            76.9166666666279,
+            79.0833333333721,
+    };
+    time_measurepoints = time_measurepoints / dt;
+    for(int i=0; i<spatial_measurepoints.size(); ++i){
+        outFile << data[int(time_measurepoints[i])][int(spatial_measurepoints[i])] << std::endl;
+    }
+    outFile << std::endl;
+}
+
 std::vector<std::vector<double>>
-Simulation::run() {
-    const double dt = 1.;
-    const double dx = 0.1;
-    const double xend = 40.;  // km?
-    const double xstart = 0.;
-    const double tend = 4.*24.;  // h
-    const double tstart = 0.;
-    int nx = int((xend - xstart) / dx);
-    int nt = int((tend - tstart) / dt);
+Simulation::run(double advCoeff, double diffCoeff, std::vector<double> rs) {
     ReactionTerm reactionTerm{};
     SolverRungeKutta6 solverRk6{dt, reactionTerm};
 
-    SolverCrankNicolson solverCrankNicolson{dt, dx, this->adv_coeff, this->diff_coeff};
+    SolverCrankNicolson solverCrankNicolson{dt, dx, advCoeff, diffCoeff};
 
     double left_bound = 0.; // kg per m3
 
@@ -85,6 +168,9 @@ Simulation::run() {
     return result;
 }
 
-Simulation::Simulation(double advCoeff, double diffCoeff, std::vector<double> rs) : adv_coeff(advCoeff),
-                                                                                           diff_coeff(diffCoeff),
-                                                                                           rs(std::move(rs)) {}
+Simulation::Simulation(Bounds spatialGrid, Bounds timeGrid) {
+    this->dx = spatialGrid.interval;
+    this->dt = timeGrid.interval;
+    this->nx = spatialGrid.get_num_of_iters();
+    this->nt = spatialGrid.get_num_of_iters();
+}

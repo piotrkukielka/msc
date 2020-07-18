@@ -5,6 +5,7 @@
 #include "../headers/solvers.h"
 
 #include <utility>
+#include <iostream>
 
 SolverRungeKutta6::SolverRungeKutta6(double dt, ReactionTerm reactionTerm) : dt(dt), reactionTerm(std::move(reactionTerm)) {}
 
@@ -51,7 +52,7 @@ std::vector<double> SolverCrankNicolson::step_cn(int nx, std::vector<double> y_p
                    (-0.25 * adv_coeff / dx + 0.5 * diff_coeff / dx / dx) * y_prev[j - 1];
         }
     }
-    y = use_thomas(a, b, c, d, nx);
+    y = SolverCrankNicolson::use_thomas(a, b, c, d, nx);
     return y;
 }
 
