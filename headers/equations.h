@@ -25,4 +25,9 @@ public:
     static double evaluate(double x);
 };
 
+class LeftBoundaryCondition{
+public:
+    static double evaluate(double t);
+};
+
 #endif //MSC_0505_EQUATIONS_H

@@ -8,10 +8,9 @@
 #include "equations.h"
 
 class Bounds{
+public:
     double lower;
     double upper;
-
-public:
     int get_num_of_iters();
     double get_value(int i);
     Bounds(double lower, double upper, double interval);
@@ -31,7 +30,7 @@ public:
 };
 
 class Simulation{
-    double dx, dt;
+    double dx, dt, starting_point_spatial, starting_point_time;
     int nx, nt;
 
     void save(std::vector<std::vector<double>> data, const std::string& path);

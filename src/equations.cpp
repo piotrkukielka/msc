@@ -2,6 +2,7 @@
 // Created by Piotr on 02-Jul-20.
 //
 #include <cmath>
+#include <iostream>
 #include "equations.h"
 
 
@@ -12,37 +13,54 @@ double ReactionTerm::evaluate(double t, double c) {
     double const L = 4.5;  //  g/m^3
     double r1 = -k_alpha*L;
     ///////////////////////////////////////////////////////////////////
-    double h = 0.75;  // m, probably should be variable MAYBE UNIT PROBLEM
-    double r2 = 0.5/h;
+    double h = 0.93;  // m, probably should be variable MAYBE UNIT PROBLEM
+    double r2 = k_alpha/h;
     ///////////////////////////////////////////////////////////////////
-    double kn = 0.25/24./24.;  //h^-2
-    double tkn = 0.;  // to be found
-    double ln = 4.5 + tkn;  //unit? g/m^3?
+    double kn = 0.01;  //h^-2
+    double tkn = 0.95;  // g/m^3
+    double ln = 4.57 * tkn;  //unit? g/m^3?
     double r3 = kn*ln;
     ///////////////////////////////////////////////////////////////////
     double r4 = 0.;  // supposed to stay like this
     ///////////////////////////////////////////////////////////////////
-    double k_a = 0.4/24.;  // h^-1
-    double c_sat = 8.5;  // g/m^3
+    double k_a = 0.04;  // h^-1
+    double c_sat = 9.;  // g/m^3
     double r5 = - k_a * (c - c_sat);
     ///////////////////////////////////////////////////////////////////
-    double const R =  1.;
+    double const R =  0.;
     double r6 = photosynthesis(t) - R;
 
     return r1 + r2 + r3 + r4 + r5 + r6;
 }
 
 double ReactionTerm::photosynthesis(double t) {
-    double P_max = 1.75;  // g / m^3 / h
-    return P_max*(sin(2.*M_PI*t/24.)+0.5);
+    // TODO: starting point according to first time point?
+    double P_max = 0.43;  // g / m^3 / h
+    return P_max*(cos(2.*M_PI*t/24.)+0.5);  // TODO: used to be sin, but as we start 12AM now
 }
 
 double ReactionTerm::temp(double t){
     // from 19 to 21, use wolfram system of eqs with 1.5, -0.5
-    return 1.*(sin(2.*M_PI*t/24.)+0.5) - (-32./9.);
+    return 1.*(cos(2.*M_PI*t/24.)+20);  // TODO: used to be sin, but as we start 12AM now
 }
 
 double InitialCondition::evaluate(double x) {
 //    return 2.; // g per m3
-    return sin(x); // TODO
+//    return sin(x); // TODO
+    double a = 1.968;
+    double b = 0.004377;
+    double c = 3.401;
+    double d = 9.134;
+    return a*sin(b*(31.8 * 60) + c) + d;  // TEN SINUS JEST NIEZALEZNY OD X, TAK MA BYC
+    // t is in hrs, convering to minutes
+    // 31.8 is the time starting point
+// to chyba wlasnie jest stale z tego sinusa
+}
+
+double LeftBoundaryCondition::evaluate(double t) {
+    double a = 1.968;
+    double b = 0.004377;
+    double c = 3.401;
+    double d = 9.134;
+    return a*sin(b*((t+31.8) * 60.) + c) + d;  // t is in hrs, convering to minutes
 }
