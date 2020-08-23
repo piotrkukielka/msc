@@ -18,7 +18,7 @@ void GridSearch::search(Bounds advCoeffs, Bounds diffCoeffs, const std::vector<d
         for (int j = 0; j < diffCoeffs.get_num_of_iters(); ++j) {
             std::cout << i*diffCoeffs.get_num_of_iters()+j+1 << " out of " << advCoeffs.get_num_of_iters() * diffCoeffs.get_num_of_iters() << std::endl;
 //            simulation.run_and_save(advCoeffs.get_value(i), diffCoeffs.get_value(j), rs);
-            simulation.run_and_save_measurepoints(-advCoeffs.get_value(i), diffCoeffs.get_value(j), rs); // TODO: minus sign at adv coeff
+            simulation.run_and_save_measurepoints(advCoeffs.get_value(i), diffCoeffs.get_value(j), rs);
         }
     }
 }
@@ -196,7 +196,7 @@ Simulation::run(double advCoeff, double diffCoeff, std::vector<double> rs) {
     for (int i = 1; i < nt; ++i) {
         result[i] = solverCrankNicolson.step_cn(nx, result[i - 1], left_bound[i]);
         for (int j = 0; j < nx; ++j) {
-            result[i][j] = solverRk6.step_rk6(result[i][j], i);
+            result[i][j] = solverRk6.step_rk6(result[i][j], i); // TODO: change!
         }
     }
     return result;

@@ -5,6 +5,8 @@
 #include <iostream>
 #include "equations.h"
 
+const double O2_GRAMM3_TO_CO2_MOLELITER = -1. / 31.9988 / 1000.;
+
 
 double ReactionTerm::evaluate(double t, double c) {
     double k20 = 0.23/24.;  // h^-1, or less
@@ -30,7 +32,7 @@ double ReactionTerm::evaluate(double t, double c) {
     double const R =  0.;
     double r6 = photosynthesis(t) - R;
 
-    return r1 + r2 + r3 + r4 + r5 + r6;
+    return (r1 + r2 + r3 + r4 + r5 + r6) * O2_GRAMM3_TO_CO2_MOLELITER;
 }
 
 double ReactionTerm::photosynthesis(double t) {
@@ -45,12 +47,16 @@ double ReactionTerm::temp(double t){
 }
 
 double InitialCondition::evaluate(double x) {
-//    return 2.; // g per m3
-//    return sin(x); // TODO
-    double a = 1.968;
-    double b = 0.004377;
-    double c = 3.401;
-    double d = 9.134;
+    // o2, WACHNIEW, old
+//    double a = 1.968;
+//    double b = 0.004377;
+//    double c = 3.401;
+//    double d = 9.134;
+    // co2, fucked
+    double a = 4.28078802e-05;
+    double b = 4.74534478e-03;
+    double c = 3.32547779e+00;
+    double d = 3.15280166e-03;
     return a*sin(b*(31.8 * 60) + c) + d;  // TEN SINUS JEST NIEZALEZNY OD X, TAK MA BYC
     // t is in hrs, convering to minutes
     // 31.8 is the time starting point
@@ -58,9 +64,15 @@ double InitialCondition::evaluate(double x) {
 }
 
 double LeftBoundaryCondition::evaluate(double t) {
-    double a = 1.968;
-    double b = 0.004377;
-    double c = 3.401;
-    double d = 9.134;
+    // o2, WACHNIEW, old
+//    double a = 1.968;
+//    double b = 0.004377;
+//    double c = 3.401;
+//    double d = 9.134;
+    // co2, fucked
+    double a = 4.28078802e-05;
+    double b = 4.74534478e-03;
+    double c = 3.32547779e+00;
+    double d = 3.15280166e-03;
     return a*sin(b*((t+31.8) * 60.) + c) + d;  // t is in hrs, convering to minutes
 }

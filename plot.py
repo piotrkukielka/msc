@@ -62,14 +62,15 @@ def plot_one():
 
 def plot_short():
     df_real = load_real_data("real_short.csv")
-    # df_sim = pd.read_csv("results/-1.000000_0.030000measurepoints", names=["sim_O2"])
-    df_sim = pd.read_csv("results/-1.100000_0.100000measurepoints", names=["sim_O2"])
+    df_sim = pd.read_csv("results/-1.000000_0.030000measurepoints", names=["sim_DIC"])
+    # df_sim = pd.read_csv("results/-1.100000_0.100000measurepoints", names=["sim_O2"])
     df = pd.concat([df_real, df_sim], axis=1)
+    df = df[0:7]
     print(df)
-    plt.plot(df["time"], df["O2"], '.', label='pomiary')
-    plt.plot(df["time"], df["sim_O2"], 'x', label='symulacja')
+    plt.plot(df["time"], df["DIC"], '.', label='pomiary')
+    plt.plot(df["time"], df["sim_DIC"], 'x', label='symulacja')
     plt.xlabel('czas od startu pomiarów [h]')
-    plt.ylabel('stężenie tlenu [g/m3]')
+    plt.ylabel('stężenie DIC [mol/L]')
     plt.legend()
     plt.show()
 
