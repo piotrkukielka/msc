@@ -6,6 +6,7 @@ import os
 import re
 from matplotlib import cm
 from mpl_toolkits.mplot3d import Axes3D
+from sklearn.metrics import mean_squared_error
 
 
 def load_measurepoints(directory):
@@ -30,7 +31,7 @@ def plot_mse():
 
     for column in df_simulations.iteritems():
         col_name = column[0][0]
-        adv_coeff, diff_coeff = re.findall('\d+\.+\d*', col_name) # TODO: check if it is correct
+        adv_coeff, diff_coeff = re.findall('\d+\.+\d*', col_name)  # TODO: check if it is correct
         adv_coeffs.append(adv_coeff)
         diff_coeffs.append(diff_coeff)
         mse = np.square(np.subtract(df["O2"], column[1].values)).mean()
@@ -54,28 +55,64 @@ def plot_mse():
 
 
 def plot_one():
+    modeled = "O2"
+    # results_file = "results/-1.000000_0.030000measurepoints"
+    results_file = 'results/all.do'
+    fig = plt.figure()
+    ax = plt.subplot(111)
     df_real = load_real_data("real.csv")
-    print(df_real)
-    plt.plot(df_real["distance"], df_real["O2"], '.')
+    df_sim = pd.read_csv(results_file, names=["sim_"+modeled])
+    df = df_real.join(df_sim)
+    if modeled=='DIC':
+        df = df.drop(0)
+    print(df)
+    grouped = df.groupby('place')
+    colors=cm.rainbow(np.linspace(0, 1, df['place'].nunique()))
+    for (place, data), color in zip(grouped, colors):
+        plt.plot(data["time"], data[modeled], 'x', color=color, label=place)
+        plt.plot(data["time"], data[modeled], '-', color=color)
+        plt.plot(data["time"], data["sim_" + modeled], '.', color=color)
+    plt.xlabel('time [h]')
+    if modeled == 'O2':
+        plt.ylabel('DO [g/m3]')
+    if modeled == 'DIC':
+        plt.ylabel('DIC [mol/l]')
+    # ax.legend()
+    # ax.legend(loc='upper left', bbox_to_anchor=(0.3, 1.2),
+    #           ncol=3, fancybox=True, shadow=True)
+    print(mean_squared_error(df[modeled], df['sim_'+modeled]))
     plt.show()
 
 
 def plot_short():
     df_real = load_real_data("real_short.csv")
-    df_sim = pd.read_csv("results/-1.000000_0.030000measurepoints", names=["sim_DIC"])
-    # df_sim = pd.read_csv("results/-1.100000_0.100000measurepoints", names=["sim_O2"])
+    # df_sim = pd.read_csv("results/-1.000000_0.030000measurepoints", names=["sim_DIC"])
+    # df_sim = pd.read_csv("results/-0.000000_0.030000measurepoints", names=["sim_O2"])
     df = pd.concat([df_real, df_sim], axis=1)
     df = df[0:7]
     print(df)
-    plt.plot(df["time"], df["DIC"], '.', label='pomiary')
-    plt.plot(df["time"], df["sim_DIC"], 'x', label='symulacja')
+    # plt.plot(df["time"], df["DIC"], '.', label='pomiary')
+    # plt.plot(df["time"], df["sim_DIC"], 'x', label='symulacja')
+    plt.plot(df["time"], df["O2"], '.', label='pomiary')
+    plt.plot(df["time"], df["sim_O2"], 'x', label='symulacja')
     plt.xlabel('czas od startu pomiarów [h]')
-    plt.ylabel('stężenie DIC [mol/L]')
+    # plt.ylabel('stężenie DIC [mol/L]')
+    plt.ylabel('stężenie DO [mol/L]')
     plt.legend()
     plt.show()
 
 
+def slice():
+    names = ['3', '6.init', '9.init']
+    for name in names:
+        df = pd.read_csv('results/'+name,
+                         sep=" ", names=['time', 'distance', 'value'])
+        df = df[df['distance']==10]
+        plt.plot(df['time'], df['value'])
+    plt.show()
+
 if __name__ == "__main__":
     # plot_mse()
     # plot_one()
-    plot_short()
+    # plot_short()
+    slice()
