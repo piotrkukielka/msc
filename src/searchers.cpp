@@ -169,6 +169,8 @@ void Simulation::save_only_measurepoints(std::vector<std::vector<double>> data, 
 //            66.5833333333139,
 //            74.4999999999418,
 //    };
+    // TODO
+    time_measurepoints = time_measurepoints + 24.; // TODO: jest prestart
     time_measurepoints = (time_measurepoints - this->starting_point_time) / dt;
     for(int i=0; i<spatial_measurepoints.size(); ++i){
         outFile << data[int(time_measurepoints[i])][int(spatial_measurepoints[i])] << std::endl;
@@ -188,6 +190,10 @@ Simulation::run(double advCoeff, double diffCoeff, std::vector<double> rs) {
         left_bound[i] = LeftBoundaryCondition::evaluate(i * dt);
     }
 
+    std::vector<double> right_bound(nt); // g per m3
+    for (int i = 0; i < nt; ++i) {
+        right_bound[i] = RightBoundaryCondition::evaluate(i * dt);
+    }
 
     std::vector<double> init_cond_adv_diff(nx);
     for (int i = 0; i < nx; ++i) {
@@ -198,7 +204,9 @@ Simulation::run(double advCoeff, double diffCoeff, std::vector<double> rs) {
     result[0] = init_cond_adv_diff;
 
     for (int i = 1; i < nt; ++i) {
-        result[i] = solverCrankNicolson.step_cn(nx, result[i - 1], left_bound[i]);
+        result[i] = solverCrankNicolson.step_cn(nx, result[i - 1], left_bound[i], right_bound[i]);
+// for no transport
+//        result[i] = result[i-1];
         for (int j = 0; j < nx; ++j) {
             result[i][j] = solverRk6.step_rk6(result[i][j], i);
         }

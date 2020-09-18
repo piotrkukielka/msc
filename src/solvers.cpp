@@ -28,8 +28,11 @@ double SolverRungeKutta6::step_rk6(double previous_value, int iteration_number) 
     return next_value;
 }
 
-std::vector<double> SolverCrankNicolson::step_cn(int nx, std::vector<double> y_prev, double left_boundary_cond) {
+std::vector<double> SolverCrankNicolson::step_cn(int nx, std::vector<double> y_prev, double left_boundary_cond, double right_boundary_cond) {
     std::vector<double> y(nx);
+//    std::vector<double> a(nx, 0.25 * adv_coeff / dx - 0.5 * diff_coeff / dx / dx);
+//    std::vector<double> b(nx, 1. / dt + diff_coeff / dx / dx);
+//    std::vector<double> c(nx, -0.25 * adv_coeff / dx - 0.5 * diff_coeff / dx / dx);
     std::vector<double> a(nx, 0.25 * adv_coeff / dx - 0.5 * diff_coeff / dx / dx);
     std::vector<double> b(nx, 1. / dt + diff_coeff / dx / dx);
     std::vector<double> c(nx, -0.25 * adv_coeff / dx - 0.5 * diff_coeff / dx / dx);
@@ -44,8 +47,10 @@ std::vector<double> SolverCrankNicolson::step_cn(int nx, std::vector<double> y_p
         if (j == 0) {
             d[j] = left_boundary_cond;
         } else if (j == nx - 1) {
-            d[j] = y_prev[j-1];
+//            d[j] = y_prev[j-1];
 //            d[j] = 0.;
+// TODO:
+            d[j] = right_boundary_cond;
         } else {
             d[j] = (1. / dt - diff_coeff / dx / dx) * y_prev[j] +
                    (0.25 * adv_coeff / dx + 0.5 * diff_coeff / dx / dx) * y_prev[j + 1] +

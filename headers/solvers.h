@@ -33,7 +33,8 @@ public:
 
     std::vector<double> step_cn(int nx,
                                 std::vector<double> y_prev,
-                                double left_boundary_cond);
+                                double left_boundary_cond,
+                                double right_boundary_cond);
 };
 
 #endif //NAREW_SOLVERS_H

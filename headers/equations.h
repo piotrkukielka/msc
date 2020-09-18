@@ -30,4 +30,9 @@ public:
     static double evaluate(double t);
 };
 
+class RightBoundaryCondition{
+public:
+    static double evaluate(double t);
+};
+
 #endif //MSC_0505_EQUATIONS_H

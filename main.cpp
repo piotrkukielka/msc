@@ -9,8 +9,8 @@ int main(){
 //    Bounds spatialGrid{0., 92.1, 0.01};  // km
 //    Bounds timeGrid{0., 79.1, 0.1};  // h
 
-    Bounds spatialGrid{0., 100.1, 0.01};  // km
-    Bounds timeGrid{0., 100.1, 0.1};  // h
+    Bounds spatialGrid{0., 100.01, 0.01};  // km
+    Bounds timeGrid{0., 124.1, 0.1};  // h
 
 
 //    Bounds spatialGrid{0., 3.14, 0.024};  // km
@@ -32,6 +32,8 @@ int main(){
 
 //    // TODO: grid 0:5 gives 0:4 etc
     Simulation simulation(spatialGrid, timeGrid);
-    simulation.run_and_save(-1., 0.03, std::vector<double>{1, 1, 1, 1, 1, 1});
-//    simulation.run_and_save_measurepoints(-1., 0.03, std::vector<double>{1, 1, 1, 1, 1, 1});
+    double adv_c = -1.;
+    double diff_c = 0.03;
+//    simulation.run_and_save(adv_c, diff_c, std::vector<double>{1, 1, 1, 1, 1, 1});
+    simulation.run_and_save_measurepoints(adv_c, diff_c, std::vector<double>{1, 1, 1, 1, 1, 1});
 }
