@@ -12,15 +12,17 @@ double ReactionTerm::evaluate(double t, double c) {
     double temp_value = temp(t);
     double mean_velocity = 0.317; //m/s
 
-    double k20 = 0.23/24.;  // h^-1, or less //OK
+    double k20 = 0.23/24.;  // h^-1, or less //OK  //max przedzialu
     double k_alpha = k20*pow(1.047, (temp(t) - 20.)); //OK
-    double k_sed = 0.0558*(mean_velocity*100)*pow(600., -2./3.);  // u* used in meters/hour, as 10percent of normal flow vel 0.3m per s czyli powinno byc 30 // IDK
+    double k_sed = 0.0558*(mean_velocity*100)*pow(480., -2./3.);  // u* used in meters/hour, as 10percent of normal flow vel 0.3m per s czyli powinno byc 30 // IDK
+    // todo: bylo 600 dla co2
 
     double const L = 5.2;  //  g/m^3 //TODO bylo 4.5 // dwie rozne wartosci //5.2 to wios, 4.5 to grabinska
     double r1 = -k_alpha*L;
     ///////////////////////////////////////////////////////////////////
     double h = 0.87;  // m, probably should be variable MAYBE UNIT PROBLEM //OK
-    double r2 = -k_sed/h;
+//    double r2 = -k_sed/h;
+    double r2 = -k_sed/h * pow(1.065, temp_value-20);
     ///////////////////////////////////////////////////////////////////
     double kn = 0.01;  //h^-2 // srodek przedzialu
     double tkn = 0.95;  // g/m^3  // chyba OK
@@ -33,12 +35,13 @@ double ReactionTerm::evaluate(double t, double c) {
     double c_sat = 14.652 - 0.41022*temp_value + 0.007991*pow(temp_value, 2) - 7.7774E-5 * pow(temp_value, 3); // g/m^3
     double r5 = k_a * (c_sat - c);
     ///////////////////////////////////////////////////////////////////
-    double const R =  0.;
+    double const R =  0.; //TODO bylo 0.1 dla rownowagi
     double r6 = photosynthesis(t) - R;
 
     // only for CO2
 //    r5 = -r5; //TODO
     return (r1 + r2 + r3 + r4 + r5 + r6);//*O2_GRAMM3_TO_CO2_MOLELITER;
+//    return r2 + r4 + r5 + r6;
 }
 
 double ReactionTerm::photosynthesis(double t) {
