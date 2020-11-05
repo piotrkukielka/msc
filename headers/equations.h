@@ -13,11 +13,12 @@ public:
 };
 
 class ReactionTerm : public Equation{
-    static double photosynthesis(double t);
     static double temp(double t);
 
 public:
     double evaluate(double t, double c) override;
+
+    static double photosynthesis(double t, double h);
 };
 
 class InitialCondition{
