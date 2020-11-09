@@ -86,9 +86,8 @@ def export_legend(legend, filename="legend.pdf"):
     fig.savefig(filename, dpi="figure", bbox_inches=bbox)
 
 
-def plot_one(results_file):
+def plot_one(results_file, modeled):
     plt.rcParams.update({'font.size': 11})
-    modeled = "DIC"
     # results_file = "results/-1.000000_0.030000measurepoints"
     # results_file = 'results/normal.030000measurepoints'
     if modeled is "O2":
@@ -133,11 +132,11 @@ def plot_one(results_file):
     plt.gca().add_artist(legend_patches)
     plt.gca().add_artist(legend_marker)
     fig.set_size_inches(10, 6)
-    # plt.show()
-    plt.savefig(results_file+".pdf",
-                   bbox_inches='tight',
-                   transparent=True,
-                   pad_inches=0)
+    plt.show()
+    # plt.savefig(results_file+".pdf",
+    #                bbox_inches='tight',
+    #                transparent=True,
+    #                pad_inches=0)
     #
     # export_legend(legend_patches)
     # plt.show()
@@ -244,7 +243,7 @@ def plot_photosynthesis():
 
 if __name__ == "__main__":
     # plot_3d()
-    plot_one("results/-1.140000_0.080000measurepoints")
+    plot_one("results/1.140000_0.080000measurepoints", "O2")
     # plot_one("results/r2_r5_dic")
     # for filename in glob.glob("results/*"):
     #     plot_one(filename)

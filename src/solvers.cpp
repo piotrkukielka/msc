@@ -5,9 +5,10 @@
 #include "../headers/solvers.h"
 
 #include <utility>
-#include <iostream>
 
-SolverRungeKutta6::SolverRungeKutta6(double dt, ReactionTerm reactionTerm) : dt(dt), reactionTerm(std::move(reactionTerm)) {}
+SolverRungeKutta6::SolverRungeKutta6(double dt,
+                                     ReactionTerm reactionTerm) : dt(dt),
+                                                                  reactionTerm(std::move(reactionTerm)) {}
 
 double SolverRungeKutta6::step_rk6(double previous_value, int iteration_number) {
     double t, next_value, k0, k1, k2, k3, k4, k5, k6, k7;
@@ -20,15 +21,18 @@ double SolverRungeKutta6::step_rk6(double previous_value, int iteration_number) 
     k5 = dt * reactionTerm.evaluate(t + 2. / 3. * dt, previous_value + 1. / 9. * (17 * k0 - 63 * k1 + 51 * k2 + k4));
     k6 = dt *
          reactionTerm.evaluate(t + 5. / 6. * dt,
-             previous_value + 1. / 24. * (-22 * k0 + 33 * k1 + 30 * k2 - 58 * k3 + 34 * k4 + 3 * k5));
+                               previous_value + 1. / 24. * (-22 * k0 + 33 * k1 + 30 * k2 - 58 * k3 + 34 * k4 + 3 * k5));
     k7 = dt * reactionTerm.evaluate(t + dt,
-                    previous_value +
-                    1. / 82. * (281 * k0 - 243 * k1 - 522 * k2 + 876 * k3 - 346 * k4 - 36 * k5 + 72 * k6));
+                                    previous_value +
+                                    1. / 82. *
+                                    (281 * k0 - 243 * k1 - 522 * k2 + 876 * k3 - 346 * k4 - 36 * k5 + 72 * k6));
     next_value = previous_value + 1. / 840. * (41 * (k0 + k7) + 216 * (k2 + k6) + 27 * (k3 + k5) + 272 * k4);
     return next_value;
 }
 
-std::vector<double> SolverCrankNicolson::step_cn(int nx, std::vector<double> y_prev, double left_boundary_cond, double right_boundary_cond) {
+std::vector<double>
+SolverCrankNicolson::step_cn(int nx, std::vector<double> y_prev, double left_boundary_cond,
+                             double right_boundary_cond) {
     std::vector<double> y(nx);
 //    std::vector<double> a(nx, 0.25 * adv_coeff / dx - 0.5 * diff_coeff / dx / dx);
 //    std::vector<double> b(nx, 1. / dt + diff_coeff / dx / dx);
@@ -48,10 +52,12 @@ std::vector<double> SolverCrankNicolson::step_cn(int nx, std::vector<double> y_p
             d[j] = left_boundary_cond;
         } else if (j == nx - 1) {
             // TODO: CO2
-            d[j] = y_prev[j-1];
-//            d[j] = 0.;
-// TODO:
-//            d[j] = right_boundary_cond;
+            if (this->modeled_variable == "DIC") {
+                d[j] = y_prev[j - 1];
+            }
+            if (this->modeled_variable == "O2") {
+                d[j] = right_boundary_cond;
+            }
         } else {
             d[j] = (1. / dt - diff_coeff / dx / dx) * y_prev[j] +
                    (0.25 * adv_coeff / dx + 0.5 * diff_coeff / dx / dx) * y_prev[j + 1] +
@@ -81,7 +87,9 @@ std::vector<double> SolverCrankNicolson::use_thomas(std::vector<double> a, std::
     return d;
 }
 
-SolverCrankNicolson::SolverCrankNicolson(double dt, double dx, double advCoeff, double diffCoeff) : dt(dt), dx(dx),
-                                                                                                    adv_coeff(advCoeff),
-                                                                                                    diff_coeff(
-                                                                                                            diffCoeff) {}
+SolverCrankNicolson::SolverCrankNicolson(double dt, double dx, double advCoeff, double diffCoeff,
+                                         std::string &modeled_variable) : dt(dt), dx(dx),
+                                                                          adv_coeff(-advCoeff),
+                                                                          diff_coeff(diffCoeff),
+                                                                          modeled_variable(modeled_variable) {}
+

@@ -12,13 +12,13 @@
 #include "solvers.h"
 
 
-void GridSearch::search(Bounds advCoeffs, Bounds diffCoeffs, const std::vector<double> &rs) {
+void GridSearch::search(Bounds advCoeffs, Bounds diffCoeffs, std::string &modeled_value) {
     Simulation simulation(this->spatialGrid, this->timeGrid);
     for (int i = 0; i < advCoeffs.get_num_of_iters(); ++i) {
         for (int j = 0; j < diffCoeffs.get_num_of_iters(); ++j) {
-            std::cout << i*diffCoeffs.get_num_of_iters()+j+1 << " out of " << advCoeffs.get_num_of_iters() * diffCoeffs.get_num_of_iters() << std::endl;
-//            simulation.run_and_save(advCoeffs.get_value(i), diffCoeffs.get_value(j), rs);
-            simulation.run_and_save_measurepoints(advCoeffs.get_value(i), diffCoeffs.get_value(j), rs);
+            std::cout << i * diffCoeffs.get_num_of_iters() + j + 1 << " out of "
+                      << advCoeffs.get_num_of_iters() * diffCoeffs.get_num_of_iters() << std::endl;
+            simulation.run_and_save(advCoeffs.get_value(i), diffCoeffs.get_value(j), true, true, modeled_value);
         }
     }
 }
@@ -38,18 +38,16 @@ double Bounds::get_value(int i) {
     return this->lower + i * this->interval;
 }
 
-void Simulation::run_and_save(double advCoeff, double diffCoeff, std::vector<double> rs) {
-    std::vector<std::vector<double>> result = this->run(advCoeff, diffCoeff, rs);
+void Simulation::run_and_save(double advCoeff, double diffCoeff, bool is_transport, bool is_only_measurepoints,
+                              std::string &modeled_variable) {
+    std::vector<std::vector<double>> result = this->run(advCoeff, diffCoeff, is_transport, modeled_variable);
     std::string path = this->create_path(advCoeff, diffCoeff);
-    this->save(result, path);
+    if (is_only_measurepoints) {
+        this->save_only_measurepoints(result, path);
+    } else {
+        this->save(result, path);
+    }
 }
-
-void Simulation::run_and_save_measurepoints(double advCoeff, double diffCoeff, std::vector<double> rs) {
-    std::vector<std::vector<double>> result = this->run(advCoeff, diffCoeff, rs);
-    std::string path = this->create_path(advCoeff, diffCoeff);
-    this->save_only_measurepoints(result, path);
-}
-
 
 std::string Simulation::create_path(double adv_coeff, double diff_coeff) {
     // TODO: add dx and dt to name
@@ -58,22 +56,12 @@ std::string Simulation::create_path(double adv_coeff, double diff_coeff) {
     return path + filename;
 }
 
-void Simulation::save_small(std::vector<std::vector<double>> data, const std::string &path) {
-    std::ofstream outFile(path);
-    for (int i = 0; i < data.size(); ++i) {
-        for (int j = 0; j < data[0].size(); ++j) {
-            outFile << data[i][j] << " ";
-        }
-        outFile << std::endl;
-    }
-}
-
 void Simulation::save(std::vector<std::vector<double>> data, const std::string &path) {
     std::ofstream outFile(path);
     for (int j = 0; j < this->nx; ++j) {
-        if(j%10==0) { // TODO: saving every 10th time and spatial step
+        if (j % 10 == 0) { // saving every 10th time and spatial step
             for (int i = 0; i < this->nt; ++i) {
-                if (i % 10 == 0) { // TODO: saving every 10th time and spatial step
+                if (i % 10 == 0) { // saving every 10th time and spatial step
                     outFile << i * this->dt << " " << j * this->dx << " " << data[i][j] << std::endl;
                 }
             }
@@ -111,21 +99,6 @@ void Simulation::save_only_measurepoints(std::vector<std::vector<double>> data, 
             90.2,
             90.2
     };
-//    std::valarray<double> spatial_measurepoints{
-//            37.6,
-//            37.6,
-//            37.6,
-//            43.9,
-//            43.9,
-//            50.9,
-//            56.5,
-//            56.5,
-//            56.5,
-//            56.5,
-//            56.5,
-//            56.5,
-//            56.5,
-//    };
     spatial_measurepoints = (spatial_measurepoints - this->starting_point_spatial) / dx;
     std::valarray<double> time_measurepoints{
             0,
@@ -154,50 +127,37 @@ void Simulation::save_only_measurepoints(std::vector<std::vector<double>> data, 
             76.9166666666279,
             79.0833333333721,
     };
-//    std::valarray<double> time_measurepoints{
-//            29.5833333333721,
-//            30.8333333334303,
-//            31.8333333333721,
-//            35.9166666667443,
-//            37.1666666666279,
-//            38.25,
-//            41.8333333333139,
-//            46.4166666667443,
-//            51.9166666666861,
-//            55.9166666666279,
-//            62.3333333334304,
-//            66.5833333333139,
-//            74.4999999999418,
-//    };
-    // TODO
     time_measurepoints = time_measurepoints + 24.; // TODO: jest prestart
     time_measurepoints = (time_measurepoints - this->starting_point_time) / dt;
-    for(int i=0; i<spatial_measurepoints.size(); ++i){
+    for (int i = 0; i < spatial_measurepoints.size(); ++i) {
         outFile << data[int(time_measurepoints[i])][int(spatial_measurepoints[i])] << std::endl;
     }
     outFile << std::endl;
 }
 
 std::vector<std::vector<double>>
-Simulation::run(double advCoeff, double diffCoeff, std::vector<double> rs) {
-    ReactionTerm reactionTerm{};
+Simulation::run(double advCoeff, double diffCoeff, bool is_transport, std::string &modeled_variable) {
+    ReactionTerm reactionTerm{modeled_variable};
     SolverRungeKutta6 solverRk6{dt, reactionTerm};
 
-    SolverCrankNicolson solverCrankNicolson{dt, dx, advCoeff, diffCoeff};
+    SolverCrankNicolson solverCrankNicolson{dt, dx, advCoeff, diffCoeff, modeled_variable};
 
+    LeftBoundaryCondition leftBoundaryCondition{modeled_variable};
     std::vector<double> left_bound(nt); // g per m3
     for (int i = 0; i < nt; ++i) {
-        left_bound[i] = LeftBoundaryCondition::evaluate(i * dt);
+        left_bound[i] = leftBoundaryCondition.evaluate(i * dt);
     }
 
+    RightBoundaryCondition rightBoundaryCondition{modeled_variable};
     std::vector<double> right_bound(nt); // g per m3
     for (int i = 0; i < nt; ++i) {
-        right_bound[i] = RightBoundaryCondition::evaluate(i * dt);
+        right_bound[i] = rightBoundaryCondition.evaluate(i * dt);
     }
 
+    InitialCondition initialCondition{modeled_variable};
     std::vector<double> init_cond_adv_diff(nx);
     for (int i = 0; i < nx; ++i) {
-        init_cond_adv_diff[i] = InitialCondition::evaluate(i * dx);
+        init_cond_adv_diff[i] = initialCondition.evaluate(i * dx);
     }
 
     std::vector<std::vector<double>> result(nt, std::vector<double>(nx, 0.));
@@ -205,10 +165,12 @@ Simulation::run(double advCoeff, double diffCoeff, std::vector<double> rs) {
 
     for (int i = 1; i < nt; ++i) {
         result[i] = solverCrankNicolson.step_cn(nx, result[i - 1], left_bound[i], right_bound[i]);
-// for no transport
-//        result[i] = result[i-1];
-        for (int j = 0; j < nx; ++j) {
-            result[i][j] = solverRk6.step_rk6(result[i][j], i);
+        if (is_transport) {
+            for (int j = 0; j < nx; ++j) {
+                result[i][j] = solverRk6.step_rk6(result[i][j], i);
+            }
+        } else {
+            result[i] = result[i - 1];
         }
     }
     return result;
@@ -222,3 +184,4 @@ Simulation::Simulation(Bounds spatialGrid, Bounds timeGrid) {
     this->starting_point_spatial = spatialGrid.lower;
     this->starting_point_time = timeGrid.lower;
 }
+

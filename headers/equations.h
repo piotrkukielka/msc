@@ -6,6 +6,7 @@
 #define MSC_0505_EQUATIONS_H
 
 #include <vector>
+#include <string>
 
 class Equation{
 public:
@@ -14,25 +15,37 @@ public:
 
 class ReactionTerm : public Equation{
     static double temp(double t);
+    std::string modeled_variable;
 
 public:
+    explicit ReactionTerm(std::string modeledVariable);
+
     double evaluate(double t, double c) override;
 
-    static double photosynthesis(double t, double h);
+    double photosynthesis(double t, double h);
 };
 
 class InitialCondition{
+    std::string modeled_variable;
 public:
-    static double evaluate(double x);
+    explicit InitialCondition(std::string modeledVariable);
+
+    double evaluate(double x);
 };
 
 class LeftBoundaryCondition{
+    std::string modeled_variable;
 public:
-    static double evaluate(double t);
+    explicit LeftBoundaryCondition(std::string modeledVariable);
+
+    double evaluate(double t);
 };
 
 class RightBoundaryCondition{
+    std::string modeled_variable;
 public:
+    explicit RightBoundaryCondition(std::string modeledVariable);
+
     static double evaluate(double t);
 };
 
