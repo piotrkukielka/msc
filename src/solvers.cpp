@@ -34,9 +34,6 @@ std::vector<double>
 SolverCrankNicolson::step_cn(int nx, std::vector<double> y_prev, double left_boundary_cond,
                              double right_boundary_cond) {
     std::vector<double> y(nx);
-//    std::vector<double> a(nx, 0.25 * adv_coeff / dx - 0.5 * diff_coeff / dx / dx);
-//    std::vector<double> b(nx, 1. / dt + diff_coeff / dx / dx);
-//    std::vector<double> c(nx, -0.25 * adv_coeff / dx - 0.5 * diff_coeff / dx / dx);
     std::vector<double> a(nx, 0.25 * adv_coeff / dx - 0.5 * diff_coeff / dx / dx);
     std::vector<double> b(nx, 1. / dt + diff_coeff / dx / dx);
     std::vector<double> c(nx, -0.25 * adv_coeff / dx - 0.5 * diff_coeff / dx / dx);
@@ -51,7 +48,6 @@ SolverCrankNicolson::step_cn(int nx, std::vector<double> y_prev, double left_bou
         if (j == 0) {
             d[j] = left_boundary_cond;
         } else if (j == nx - 1) {
-            // TODO: CO2
             if (this->modeled_variable == "DIC") {
                 d[j] = y_prev[j - 1];
             }

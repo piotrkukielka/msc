@@ -2,8 +2,6 @@
 // Created by Piotr on 02-Jul-20.
 //
 #include <cmath>
-#include <iostream>
-#include <fstream>
 #include <utility>
 #include "equations.h"
 
@@ -14,20 +12,19 @@ double ReactionTerm::evaluate(double t, double c) {
     double r1 =0 , r2 = 0, r3 = 0, r4 = 0, r5 = 0, r6 = 0;
     double temp_value = temp(t);
 
-    // r1
-    double k20 = 0.23/24.;  // h^-1, or less //OK  //max przedzialu
+    ///////////////////////////////////////////////////////////////////
+    double k20 = 0.23/24.;  // h^-1, or less
     double k_alpha = k20*pow(1.047, (temp(t) - 20.)); //OK
-    double const L = 5.2;  //  g/m^3 //TODO bylo 4.5 // dwie rozne wartosci //5.2 to wios, 4.5 to grabinska
+    double const L = 5.2;  //  g/m^3, or less by Grabinska
     r1 = -k_alpha*L;
-
     ///////////////////////////////////////////////////////////////////
     double k_sed = 0.021;  //g/m^2/h
-    double h = 0.87;  // m, probably should be variable MAYBE UNIT PROBLEM //OK
+    double h = 0.87;  // m
     r2 = -k_sed/h * pow(1.065, temp_value-20);
     ///////////////////////////////////////////////////////////////////
-    double kn = 0.01;  //h^-1 // srodek przedzialu
-    double tkn = 0.95;  // g/m^3  // chyba OK
-    double ln = 4.57 * tkn;  //unit? g/m^3?
+    double kn = 0.01;  // h^-1
+    double tkn = 0.95;  // g/m^3
+    double ln = 4.57 * tkn;  // g/m^3
     r3 = -kn*ln;
     ///////////////////////////////////////////////////////////////////
     if (this->modeled_variable == "DIC") {
@@ -37,10 +34,10 @@ double ReactionTerm::evaluate(double t, double c) {
         r4 = 0.;
     }
     ///////////////////////////////////////////////////////////////////
-    double k_a = 0.0175;  // h^-1 //srodek przedzialu dla large river of low velocity
+    double k_a = 0.0175;  // h^-1 large river of low velocity
     double c_sat = 14.652 - 0.41022*temp_value + 0.007991*pow(temp_value, 2) - 7.7774E-5 * pow(temp_value, 3); // g/m^3
     if (this->modeled_variable == "DIC") {
-        r5 = 0.02/h; //dwa milimole per h per mkw wiec dzielone przez glebokosc // DIC
+        r5 = 0.02/h;
         r5 = r5*0.001;  //per m^3 to per liter // DIC
     }
     if (this->modeled_variable == "O2") {
@@ -52,7 +49,7 @@ double ReactionTerm::evaluate(double t, double c) {
     if (this->modeled_variable == "DIC") {
         return (-r2 - r6)*O2_GRAMM3_TO_CO2_MOLELITER - r5 + r4;
     } else if (this->modeled_variable == "O2") {
-        return (r2 + r4 + r5 + r6); // DO bez
+        return (r2 + r4 + r5 + r6);
     } else {
         return 0;
     }
@@ -66,12 +63,12 @@ double ReactionTerm::photosynthesis(double t, double h) {
         is_day = true;
     }
 
-    double R = 0.09; //z lipca 0.09 g/ m^3
-    double P_max = 0.32/h + R;  // g / m^3  // should this be per h? // bylo 0.32 z lipca
-    double P = P_max*sin(2.*M_PI*(time_of_day-timeline_start)/32.);  // -1 to move 6hrs back compared to the okres (half of okres)
-    // okres nie ma 24h, tylko 16*2=32 bo tyle trwa doba od 5 do 21
+    double R = 0.09; // g/ m^3, from July
+    double P_max = 0.32/h + R;  // g / m^3
+    double P = P_max*sin(2.*M_PI*(time_of_day-timeline_start)/32.);  // -1 to move 6hrs back compared to the half of the period
+    // the sines period is not 24, but 32 because half of it should be the length of the day
 
-    if(is_day){  // -5 because 5AM and it would give us plaskie w zlym miejscu, to tylko czas nie ustawianie sinusa (?)
+    if(is_day){
         return P-R;
     }else{
         return -R;

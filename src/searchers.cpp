@@ -50,7 +50,6 @@ void Simulation::run_and_save(double advCoeff, double diffCoeff, bool is_transpo
 }
 
 std::string Simulation::create_path(double adv_coeff, double diff_coeff) {
-    // TODO: add dx and dt to name
     std::string path = "../results/";
     std::string filename = std::to_string(adv_coeff) + "_" + std::to_string(diff_coeff);
     return path + filename;
@@ -127,7 +126,7 @@ void Simulation::save_only_measurepoints(std::vector<std::vector<double>> data, 
             76.9166666666279,
             79.0833333333721,
     };
-    time_measurepoints = time_measurepoints + 24.; // TODO: jest prestart
+    time_measurepoints = time_measurepoints + 24.;  // prestart is here
     time_measurepoints = (time_measurepoints - this->starting_point_time) / dt;
     for (int i = 0; i < spatial_measurepoints.size(); ++i) {
         outFile << data[int(time_measurepoints[i])][int(spatial_measurepoints[i])] << std::endl;
