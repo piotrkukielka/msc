@@ -164,13 +164,13 @@ Simulation::run(double advCoeff, double diffCoeff, bool is_transport, std::strin
     result[0] = init_cond_adv_diff;
 
     for (int i = 1; i < nt; ++i) {
-        result[i] = solverCrankNicolson.step_cn(nx, result[i - 1], left_bound[i], right_bound[i]);
         if (is_transport) {
-            for (int j = 0; j < nx; ++j) {
-                result[i][j] = solverRk6.step_rk6(result[i][j], i);
-            }
+            result[i] = solverCrankNicolson.step_cn(nx, result[i - 1], left_bound[i], right_bound[i]);
         } else {
             result[i] = result[i - 1];
+        }
+        for (int j = 0; j < nx; ++j) {
+            result[i][j] = solverRk6.step_rk6(result[i][j], i);
         }
     }
     return result;

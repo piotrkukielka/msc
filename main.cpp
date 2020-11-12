@@ -9,7 +9,6 @@ int main(){
 
     Bounds spatialGrid{0., 100.01, 0.01};  // km
     Bounds timeGrid{0., 124.1, 0.1};  // h
-    std::vector<double> rs{1,1,1,1,1,1}; // NEVER USED!
 
 //    // TODO: grid 0:5 gives 0:4 etc
     Simulation simulation(spatialGrid, timeGrid);
